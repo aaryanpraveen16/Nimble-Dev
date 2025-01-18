@@ -1,0 +1,8 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+.CodeMirror{
+  height: 90vh !important;
+}
