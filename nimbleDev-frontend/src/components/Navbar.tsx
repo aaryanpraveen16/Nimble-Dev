@@ -5,9 +5,8 @@ import Typography from "@mui/material/Typography";
 
 const Navbar: React.FC = () => {
   return (
-    <AppBar position="static" style={{ background:"#121212" }}>
+    <AppBar position="static" style={{ background: "#121212" }}>
       <Toolbar>
-
         <Typography variant="h6" style={{ flexGrow: 1 }}>
           Nimble Dev
         </Typography>

@@ -3,19 +3,20 @@
   padding: 0;
   box-sizing: border-box;
 }
-.CodeMirror{
+body {
+  overflow: hidden;
+}
+
+.CodeMirror {
   height: 90vh !important;
 }
-.code-editor{
+.code-editor {
   display: flex;
 }
 
-.editor-container{
+.editor-container {
   width: 100%;
 }
-.App{
-
-}
-#root{
+#root {
   width: 100%;
 }

@@ -9,7 +9,6 @@ import {
   findFileByName,
   Type,
 } from "./utils/fileManager";
-// import { useFilesFromSandbox } from './utils';
 import Sidebar from "./components/Sidebar";
 import { FileTree } from "./components/FileTree";
 import Navbar from "./components/Navbar";
@@ -28,7 +27,6 @@ function App() {
   const [rootDir, setRootDir] = useState(dummyDir);
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
   const onSelect = (file: File) => {
-    console.log(file)
     setSelectedFile(file);
   };
 
@@ -47,7 +45,6 @@ function App() {
       "fileContent",
       ({ fileName, data }: { fileName: string; data: string }) => {
         console.log(`Received content for ${fileName}:`, data);
-        // setData(data);
       }
     );
 

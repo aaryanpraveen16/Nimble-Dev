@@ -1,19 +1,19 @@
 export enum Type {
   FILE,
-  DIRECTORY, 
-  DUMMY 
+  DIRECTORY,
+  DUMMY,
 }
 
 interface CommonProps {
-  id: string; // 文件id
-  type: Type; // 文件类型
-  name: string; // 名称
-  parentId: string | undefined; 
-  depth: number; 
+  id: string;
+  type: Type;
+  name: string;
+  parentId: string | undefined;
+  depth: number;
 }
 
 export interface File extends CommonProps {
-  content: string ; 
+  content: string;
 }
 
 export interface Directory extends CommonProps {
@@ -22,12 +22,12 @@ export interface Directory extends CommonProps {
 }
 
 /**
- * 
- * @param data 
+ *
+ * @param data
  */
 export function buildFileTree(data: any): Directory {
-  const dirs = data.directories; 
-  const files = data.files; 
+  const dirs = data.directories;
+  const files = data.files;
   const cache = new Map<string, Directory | File>();
   let rootDir: Directory = {
     id: "0",
@@ -36,10 +36,10 @@ export function buildFileTree(data: any): Directory {
     type: Type.DIRECTORY,
     depth: 0,
     dirs: [],
-    files: []
+    files: [],
   };
- 
-  dirs.forEach((item:any) => {
+
+  dirs.forEach((item: any) => {
     let dir: Directory = {
       id: item.id,
       name: item.name,
@@ -47,19 +47,19 @@ export function buildFileTree(data: any): Directory {
       type: Type.DIRECTORY,
       depth: 0,
       dirs: [],
-      files: []
+      files: [],
     };
 
     cache.set(dir.name, dir);
   });
-  files.forEach((item:any) => {
+  files.forEach((item: any) => {
     let file: File = {
       id: item.id,
       name: item.name,
       parentId: item.parentFolder === null ? "." : item.parentFolder,
       type: Type.FILE,
       depth: 0,
-      content: item.content
+      content: item.content,
     };
     cache.set(file.name, file);
   });
@@ -69,11 +69,9 @@ export function buildFileTree(data: any): Directory {
       else rootDir.files.push(value as File);
     } else {
       const parentDir = cache.get(value.parentId as string) as Directory;
-      if (value.type === Type.DIRECTORY){
+      if (value.type === Type.DIRECTORY) {
         parentDir.dirs.push(value as Directory);
-      }
-        
-      else parentDir.files.push(value as File);
+      } else parentDir.files.push(value as File);
     }
   });
 
@@ -83,8 +81,8 @@ export function buildFileTree(data: any): Directory {
 }
 
 /**
- * @param rootDir 
- * @param curDepth 
+ * @param rootDir
+ * @param curDepth
  */
 function getDepth(rootDir: Directory, curDepth: number) {
   rootDir.files.forEach((file) => {
