@@ -1,28 +1,62 @@
-import React, { useState } from "react";
-import MonacoEditor from "@uiw/react-monacoeditor";
+import React, { useEffect, useState } from 'react';
+import { Editor } from '@monaco-editor/react';
+import { File } from './utils/fileManager';
 
 interface EditorProps {
-  data: string;
+  selectedFile: File | undefined;
 }
-const EditorComponent: React.FC<EditorProps> = ({ data }) => {
-  const [value, setvalue] = useState(data);
-  const onChange = React.useCallback((val: any) => {
-    console.log("val:", val);
-    setvalue(val);
-  }, []);
+
+const EditorComponent: React.FC<EditorProps> = ({ selectedFile }) => {
+  const [code, setCode] = useState<string | undefined>(selectedFile?.content);
+  const [language, setLanguage] = useState<string | undefined>('javascript'); // Default language
+
+  useEffect(() => {
+    if (selectedFile) {
+      setCode(selectedFile.content);
+
+      // Determine language based on file extension
+      const fileExtension = selectedFile.name.split('.').pop();
+      let detectedLanguage: string | undefined;
+
+      switch (fileExtension) {
+        case 'js':
+        case 'jsx':
+          detectedLanguage = 'javascript';
+          break;
+        case 'ts':
+        case 'tsx':
+          detectedLanguage = 'typescript';
+          break;
+        case 'css':
+          detectedLanguage = 'css';
+          break;
+        case 'html':
+          detectedLanguage = 'html';
+          break;
+        case 'json':
+          detectedLanguage = 'json';
+          break;
+        default:
+          detectedLanguage = 'plaintext'; // Fallback for unknown extensions
+      }
+
+      setLanguage(detectedLanguage);
+    }
+  }, [selectedFile]);
+
+  if (!selectedFile) return null;
+
   return (
-    <div style={{ height: "100vh", width: "50vw" }}>
-      <MonacoEditor
-        language="javascript"
-        value={data}
-        height="100%"
-        width="100%"
-        onChange={(newVal)=>onChange(newVal)}
-        options={{
-          theme: "vs-dark",
-        }}
+    <div>
+      <Editor
+        height="100vh"
+        language={language} 
+        value={code}
+        theme="vs-dark"
+        onChange={(newValue) => setCode(newValue || '')}
       />
     </div>
   );
 };
+
 export default EditorComponent;

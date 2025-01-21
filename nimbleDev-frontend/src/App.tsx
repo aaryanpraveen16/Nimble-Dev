@@ -1,66 +1,82 @@
-import { useEffect, useState } from 'react';
-import './App.css';
-import { socket } from './socket';
-import EditorComponent from './EditorComponent';
+import { useEffect, useState } from "react";
+import "./App.css";
+import { socket } from "./socket";
+import EditorComponent from "./EditorComponent";
+import {
+  buildFileTree,
+  Directory,
+  File,
+  findFileByName,
+  Type,
+} from "./utils/fileManager";
+// import { useFilesFromSandbox } from './utils';
+import Sidebar from "./components/Sidebar";
+import { FileTree } from "./components/FileTree";
+import Navbar from "./components/Navbar";
+
+const dummyDir: Directory = {
+  id: "1",
+  name: "loading...",
+  type: Type.DUMMY,
+  parentId: undefined,
+  depth: 0,
+  dirs: [],
+  files: [],
+};
 
 function App() {
-  const [data, setData] = useState<string>(""); // File content
-  const [files, setFiles] = useState<string[]>([]); // List of downloaded files
-  const [selectedFile, setSelectedFile] = useState<string>(""); // Selected file name
+  const [rootDir, setRootDir] = useState(dummyDir);
+  const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
+  const onSelect = (file: File) => {
+    console.log(file)
+    setSelectedFile(file);
+  };
 
   useEffect(() => {
-    // Request the list of files from the server
-    socket.emit('fetchFiles');
-
-    // Listen for the list of downloaded files
-    socket.on('filesDownloaded', (downloadedFiles: string[]) => {
-      console.log('Files downloaded:', downloadedFiles);
-      setFiles(downloadedFiles);
-
-      // Automatically load the first file, if available
-      if (downloadedFiles.length > 0) {
-        setSelectedFile(downloadedFiles[0]);
-        socket.emit('getFile', downloadedFiles[0]);
+    socket.emit("fetchFiles");
+    socket.on("filesDownloaded", (downloadedFiles: Directory) => {
+      console.log("Files downloaded:", downloadedFiles);
+      const rootDir = buildFileTree(downloadedFiles);
+      if (!selectedFile) {
+        setSelectedFile(findFileByName(rootDir, "main.jsx"));
       }
+      setRootDir(rootDir);
     });
 
-    // Listen for file content
-    socket.on('fileContent', ({ fileName, data }: { fileName: string; data: string }) => {
-      console.log(`Received content for ${fileName}:`, data);
-      setData(data);
-    });
+    socket.on(
+      "fileContent",
+      ({ fileName, data }: { fileName: string; data: string }) => {
+        console.log(`Received content for ${fileName}:`, data);
+        // setData(data);
+      }
+    );
 
     // Cleanup WebSocket listeners on unmount
     return () => {
-      socket.off('filesDownloaded');
-      socket.off('fileContent');
+      socket.off("filesDownloaded");
+      socket.off("fileContent");
     };
   }, []);
   // handleFileSelect
-  const handleFileSelect = (fileName: string) => {
-    setSelectedFile(fileName);
-    socket.emit('getFile', fileName); // Request content for the selected file
-  };
+  // const handleFileSelect = (fileName: string) => {
+  //   setSelectedFile(fileName);
+  //   socket.emit('getFile', fileName); // Request content for the selected file
+  // };
 
   return (
     <div className="App">
-      <h1>File Viewer</h1>
-      <div className="file-list">
-        <h2>Available Files</h2>
-        <ul>
-          {files.map((file) => (
-            <li
-              key={file}
-              onClick={() => handleFileSelect(file)}
-              style={{ cursor: 'pointer', fontWeight: file === selectedFile ? 'bold' : 'normal' }}
-            >
-              {file}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div className="editor-container">
-        <EditorComponent data={data} />
+      <Navbar />
+      <div className="code-editor">
+        <Sidebar>
+          <FileTree
+            rootDir={rootDir}
+            selectedFile={selectedFile}
+            onSelect={onSelect}
+          />
+        </Sidebar>
+        <div className="editor-container">
+          <EditorComponent selectedFile={selectedFile} />
+        </div>
       </div>
     </div>
   );

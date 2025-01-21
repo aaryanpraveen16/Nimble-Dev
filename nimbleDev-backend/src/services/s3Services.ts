@@ -2,9 +2,16 @@ import { S3Client, ListBucketsCommand, GetObjectCommand, ListObjectsCommand, _Ob
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import axios from 'axios';
 import fs from 'fs';
-import path from 'path';
-import { config } from './config';
+import path, { dirname } from 'path';
+import { config } from '../config';
 import  {exec}  from 'child_process';
+import { Directory } from '../models/directoryModel';
+import { generateUniqueId } from '../utils/helpers';
+import { File } from '../models/fileModel';
+
+export const files: File[] = [];
+export const directories: Directory[] = [];
+
 // Initialize S3 Client
 const client = new S3Client({
   region: config.aws.region,
@@ -34,15 +41,39 @@ export async function listFilesInFolder(bucketName: string, folderPath: string):
 }
 
 // Download a File
-export async function downloadFile(downloadDir: string, file: _Object): Promise<string> {
+export async function downloadFile(downloadDir: string, file: _Object): Promise<{ files: File[]; directories: Directory[] }> {
   if (!file.Key) throw new Error('File Key is missing');
-  const url = await getObjectUrl(file.Key);
-  const filePath = path.join(downloadDir, path.basename(file.Key));
 
-  const response = await axios.get(url, { responseType: 'arraybuffer' });
-  fs.writeFileSync(filePath, response.data);
-  console.log(`Downloaded: ${filePath}`);
-  return path.basename(filePath);
+  let fileName = path.basename(file.Key.substring(32));
+  let dirName = path.dirname(file.Key.substring(32));
+  console.log(fileName,dirName)
+  let url = await getObjectUrl(file.Key);
+  downloadDir = downloadDir + (dirName == "." ? "/" : `${'/'+dirName}`)
+  const filePath = path.join(downloadDir + file);
+  const response = await axios.get(url);
+
+  // fs.writeFileSync(filePath, response.data);
+
+  const fileEntry: File = {
+    id: generateUniqueId(),
+    name: fileName,
+    parentFolder: path.basename(dirName),
+    type: 'file',
+    content: response.data,
+  };
+  files.push(fileEntry);
+  if(dirName !== "."){
+    const dirEntry: Directory = {
+      id: generateUniqueId(),
+      name:path.basename(dirName),
+      parentFolder:path.basename(path.dirname(dirName)),
+      type: 'folder',
+    };
+    if (!directories.some((dir) => dir.name === dirEntry.name && dir.parentFolder === dirEntry.parentFolder)) {
+      directories.push(dirEntry);
+    }
+  }
+  return {files,directories};
 }
 
 // Run a File Programmatically

@@ -1,5 +1,4 @@
 import express, { Application, Request, Response } from 'express';
-import dotenv from 'dotenv';
 import http from 'http';
 import { Server } from 'socket.io';
 import fs from 'fs';
@@ -9,9 +8,11 @@ import {
   listFilesInFolder,
   downloadFile,
   runFile,
-} from './s3Functions'; // Import the S3 functions from the first file
+} from './services/s3Services'; // Import the S3 functions from the first file
+import { File } from './models/fileModel';
+import { Directory } from './models/directoryModel';
+// Load environment variables from .env
 
-dotenv.config();
 
 const app: Application = express();
 const server: http.Server = http.createServer(app);
@@ -20,7 +21,11 @@ const io = new Server(server, {
     origin: "http://localhost:5173",
   },
 });
-
+interface FileTree {
+  files: File[],
+  directories:Directory[]
+}
+let fileTree:FileTree;
 const port = config.port;
 
 // WebSocket connection handling
@@ -31,7 +36,7 @@ io.on('connection', (socket) => {
   socket.on('fetchFiles', async () => {
     try {
       const bucketName = 'repl-s3-dev-files';
-      const folderPath = 'base-files/JS/';
+      const folderPath = 'base-files/base-files-for-react/';
       const downloadDir = 'execute';
 
       // Create download directory if it doesn't exist
@@ -42,18 +47,22 @@ io.on('connection', (socket) => {
       // Fetch file list from S3
       const files = await listFilesInFolder(bucketName, folderPath);
 
-      const downloadedFiles = [];
+      
       for (const file of files) {
         if (file.Key && !file.Key.endsWith('/')) {
-          const filePath = await downloadFile(downloadDir, file);
-          downloadedFiles.push(filePath);
+          let filePath = "";
+          
+          // console.log(path.dirname(file.Key.substring(32)), "dirname",path.basename(file.Key.substring(32)),"filename")
+           
+            fileTree = await downloadFile(downloadDir, file);
+          }
         }
-      }
+      
 
-      console.log('Files downloaded:', downloadedFiles);
+      // console.log('Files downloaded:', downloadedFiles);
 
       // Send the list of downloaded files to the client
-      socket.emit('filesDownloaded', downloadedFiles);
+      socket.emit('filesDownloaded', fileTree);
 
       // Optionally, execute each downloaded file
       // downloadedFiles.forEach((filePath) => {
@@ -64,6 +73,7 @@ io.on('connection', (socket) => {
       console.error('Error fetching files:', error);
       socket.emit('error', 'Failed to fetch files');
     }
+  
   });
 
   // Serve a specific file on request

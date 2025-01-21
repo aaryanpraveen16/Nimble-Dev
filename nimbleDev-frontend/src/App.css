@@ -6,3 +6,16 @@
 .CodeMirror{
   height: 90vh !important;
 }
+.code-editor{
+  display: flex;
+}
+
+.editor-container{
+  width: 100%;
+}
+.App{
+
+}
+#root{
+  width: 100%;
+}

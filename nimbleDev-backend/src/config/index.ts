@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 
 // Load environment variables from .env
-dotenv.config();
+dotenv.config({path:'../.env'});
 
 export const config = {
   aws: {
