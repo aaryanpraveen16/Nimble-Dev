@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { socket } from "./socket";
+// import Counter from "./components/Counter";
 import EditorComponent from "./EditorComponent";
 import {
   buildFileTree,
@@ -12,6 +13,7 @@ import {
 import Sidebar from "./components/Sidebar";
 import { FileTree } from "./components/FileTree";
 import Navbar from "./components/Navbar";
+import { ReactTerminal } from "react-terminal";
 
 const dummyDir: Directory = {
   id: "1",
@@ -47,7 +49,13 @@ function App() {
         console.log(`Received content for ${fileName}:`, data);
       }
     );
-
+    
+    socket.on(
+      "stdoutFromCmd",
+      (stdout:string) => {
+        console.log(stdout);
+      }
+    );
     // Cleanup WebSocket listeners on unmount
     return () => {
       socket.off("filesDownloaded");
@@ -60,6 +68,9 @@ function App() {
   //   socket.emit('getFile', fileName); // Request content for the selected file
   // };
 
+  const sendToServer = (cmd:string) =>{
+    socket.emit("cmdFromUI",cmd);
+  }
   return (
     <div className="App">
       <Navbar />
@@ -73,6 +84,14 @@ function App() {
         </Sidebar>
         <div className="editor-container">
           <EditorComponent selectedFile={selectedFile} />
+        </div>
+        <div className="output-and-terminal-container">
+          <div className="output-container">
+            {/* <Counter/> */}
+          </div>
+          <div className="terminal-container">
+            <ReactTerminal theme="dark" showControlBar={false} defaultHandler={(cmd:string)=>sendToServer(cmd)}/>
+          </div>
         </div>
       </div>
     </div>

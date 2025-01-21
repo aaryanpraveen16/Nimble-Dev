@@ -11,6 +11,7 @@ import {
 } from './services/s3Services'; // Import the S3 functions from the first file
 import { File } from './models/fileModel';
 import { Directory } from './models/directoryModel';
+import {executeCommand} from "./utils/helpers"
 // Load environment variables from .env
 
 
@@ -41,7 +42,7 @@ io.on('connection', (socket) => {
 
       // Create download directory if it doesn't exist
       if (!fs.existsSync(downloadDir)) {
-        fs.mkdirSync(downloadDir, { recursive: true });
+        fs.mkdirSync(downloadDir);
       }
 
       // Fetch file list from S3
@@ -92,6 +93,12 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('A user disconnected');
   });
+
+  socket.on("cmdFromUI",async (cmd:string)=>{
+    const result = await executeCommand(cmd);
+    socket.emit("stdoutFromCmd",result);
+    console.log(result,"---------> result")
+  })
 });
 
 // Start the server

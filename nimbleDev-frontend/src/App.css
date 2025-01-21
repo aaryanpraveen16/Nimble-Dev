@@ -15,8 +15,23 @@ body {
 }
 
 .editor-container {
-  width: 100%;
+  flex: 1;
 }
+
 #root {
   width: 100%;
+}
+.output-and-terminal-container{
+  flex: 1;
+  width: 50vw;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+}
+.output-container{
+  flex: 1;
+  background-color: white;
+}
+.terminal-container{
+  flex: 1;
 }
