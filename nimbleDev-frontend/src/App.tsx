@@ -14,6 +14,7 @@ import Sidebar from "./components/Sidebar";
 import { FileTree } from "./components/FileTree";
 import Navbar from "./components/Navbar";
 import { ReactTerminal } from "react-terminal";
+import Xterm from "./components/Xterm";
 
 const dummyDir: Directory = {
   id: "1",
@@ -50,12 +51,7 @@ function App() {
       }
     );
     
-    socket.on(
-      "stdoutFromCmd",
-      (stdout:string) => {
-        console.log(stdout);
-      }
-    );
+
     // Cleanup WebSocket listeners on unmount
     return () => {
       socket.off("filesDownloaded");
@@ -88,9 +84,10 @@ function App() {
         <div className="output-and-terminal-container">
           <div className="output-container">
             {/* <Counter/> */}
+            <iframe style={{width:"100%",height:"100%"}} src="http://localhost:5174" title="Inner App" />
           </div>
           <div className="terminal-container">
-            <ReactTerminal theme="dark" showControlBar={false} defaultHandler={(cmd:string)=>sendToServer(cmd)}/>
+            <Xterm/>
           </div>
         </div>
       </div>

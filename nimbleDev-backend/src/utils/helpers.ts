@@ -1,5 +1,8 @@
 import * as crypto from "crypto";
-import {spawn} from "child_process";
+import { ChildProcessWithoutNullStreams, spawn } from "child_process";
+import { Socket } from "socket.io";
+const controller = new AbortController();
+const { signal } = controller;
 
 export function hashString(
   input: string,
@@ -19,36 +22,47 @@ export function generateUniqueId(): string {
 }
 
 // Function to spawn a process with dynamic command and arguments
-export function executeCommand(command: string) {
-  return new Promise((resolve, reject) => {
+export function executeCommand(command: string, socket: Socket) {
     console.log(`Executing: ${command}`);
 
     // Spawn the process
-
-    const process = spawn(command, { stdio: "inherit", shell: true });
+    const current = spawn(command, {
+      stdio: "pipe",
+      shell: true,
+      cwd: "./execute",
+      signal
+    });
     let output = "";
-    let errorOutput = '';
-    // if (process.stdout == null || process.stderr == null) throw new Error("File Key is missing");
+    let errorOutput = "";
+    current.unref();
     // Capture standard output
-    process.stdout?.on("data", (data: string) => {
-      output += data.toString();
+    current.stdout?.on("data", (data: string) => {
+      socket.emit("stdoutFromCmd", data.toString());
+    });
+    current.on("SIGTERM", () => {
+      console.log("Received SIGTERM. Exiting...");
+      // process.stdin.end();
+      // current.kill("SIGTERM");
+      // process.exit();
+      controller.abort();
+
     });
     // Capture error output
-    process.stderr?.on("data", (data:string) => {
-      errorOutput += data.toString();
-    });
-    // Handle process completion
-    process.on("close", (code: number) => {
-      if (code === 0) {
-        resolve(`Process completed successfully with code: ${code}`);
-      } else {
-        reject(`Process exited with error code: ${code}`);
-      }
+    current.stderr?.on("data", (data: string) => {
+      socket.emit("stdoutFromCmd", `Error: ${data.toString()}`);
     });
 
-    // Handle process errors
-    process.on("error", (err: { message: string }) => {
-      reject(`Error spawning process: ${err.message}`);
+    // Handle process completion
+    current.on("close", (code: number) => {
+      socket.emit(
+        "stdoutFromCmd",
+        `Process completed with exit code ${code}.`
+      );
     });
+    console.log(current.pid);
+  // Handle process errors
+  current.on("error", (err: { message: string }) => {
+    socket.emit("stdoutFromCmd", `Error spawning process: ${err.message}`);
   });
+  return current;
 }
