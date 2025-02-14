@@ -8,7 +8,7 @@ interface CommonProps {
   id: string;
   type: Type;
   name: string;
-  parentId: string | undefined;
+  parentDir: string | undefined;
   depth: number;
 }
 
@@ -32,7 +32,7 @@ export function buildFileTree(data: any): Directory {
   let rootDir: Directory = {
     id: "0",
     name: "root",
-    parentId: undefined,
+    parentDir: undefined,
     type: Type.DIRECTORY,
     depth: 0,
     dirs: [],
@@ -43,7 +43,7 @@ export function buildFileTree(data: any): Directory {
     let dir: Directory = {
       id: item.id,
       name: item.name,
-      parentId: item.parentFolder === null ? "." : item.parentFolder,
+      parentDir: item.parentFolder === null ? "." : item.parentFolder,
       type: Type.DIRECTORY,
       depth: 0,
       dirs: [],
@@ -56,7 +56,7 @@ export function buildFileTree(data: any): Directory {
     let file: File = {
       id: item.id,
       name: item.name,
-      parentId: item.parentFolder === null ? "." : item.parentFolder,
+      parentDir: item.parentFolder === null ? "." : item.parentFolder,
       type: Type.FILE,
       depth: 0,
       content: item.content,
@@ -64,11 +64,11 @@ export function buildFileTree(data: any): Directory {
     cache.set(file.name, file);
   });
   cache.forEach((value, key) => {
-    if (value.parentId === ".") {
+    if (value.parentDir === ".") {
       if (value.type === Type.DIRECTORY) rootDir.dirs.push(value as Directory);
       else rootDir.files.push(value as File);
     } else {
-      const parentDir = cache.get(value.parentId as string) as Directory;
+      const parentDir = cache.get(value.parentDir as string) as Directory;
       if (value.type === Type.DIRECTORY) {
         parentDir.dirs.push(value as Directory);
       } else parentDir.files.push(value as File);

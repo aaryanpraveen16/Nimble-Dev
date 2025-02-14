@@ -15,12 +15,13 @@ import { FileTree } from "./components/FileTree";
 import Navbar from "./components/Navbar";
 import { ReactTerminal } from "react-terminal";
 import Xterm from "./components/Xterm";
+import Split from "react-split";
 
 const dummyDir: Directory = {
   id: "1",
   name: "loading...",
   type: Type.DUMMY,
-  parentId: undefined,
+  parentDir: undefined,
   depth: 0,
   dirs: [],
   files: [],
@@ -50,7 +51,6 @@ function App() {
         console.log(`Received content for ${fileName}:`, data);
       }
     );
-    
 
     // Cleanup WebSocket listeners on unmount
     return () => {
@@ -58,39 +58,44 @@ function App() {
       socket.off("fileContent");
     };
   }, []);
-  // handleFileSelect
-  // const handleFileSelect = (fileName: string) => {
-  //   setSelectedFile(fileName);
-  //   socket.emit('getFile', fileName); // Request content for the selected file
-  // };
 
-  const sendToServer = (cmd:string) =>{
-    socket.emit("cmdFromUI",cmd);
-  }
   return (
     <div className="App">
       <Navbar />
-      <div className="code-editor">
-        <Sidebar>
-          <FileTree
-            rootDir={rootDir}
-            selectedFile={selectedFile}
-            onSelect={onSelect}
-          />
-        </Sidebar>
-        <div className="editor-container">
-          <EditorComponent selectedFile={selectedFile} />
+      {/* <div
+        className="code-editor-terminal-container"
+        style={{ display: "flex", height: "100vh", width: "100vw" }}
+      > */}
+        <Split className="split" sizes={[60,40]} minSize={[700,400]} maxSize={[1200]} gutterSize={10} dragInterval={10}>
+        <div
+          className="code-editor"
+          style={{  display: "flex"}}
+        >
+          <Sidebar>
+            <FileTree
+              rootDir={rootDir}
+              selectedFile={selectedFile}
+              onSelect={onSelect}
+            />
+          </Sidebar>
+          <div className="editor-container">
+            <EditorComponent selectedFile={selectedFile} />
+          </div>
         </div>
         <div className="output-and-terminal-container">
           <div className="output-container">
-            {/* <Counter/> */}
-            <iframe style={{width:"100%",height:"100%"}} src="http://localhost:5174" title="Inner App" />
+            <iframe
+              style={{ width: "100%", height: "100%" }}
+              src="http://localhost:5174"
+              title="Inner App"
+            />
           </div>
           <div className="terminal-container">
-            <Xterm/>
+            <Xterm />
           </div>
         </div>
-      </div>
+        </Split>
+      {/* </div> */}
     </div>
   );
 }

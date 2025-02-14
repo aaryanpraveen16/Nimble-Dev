@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Editor } from "@monaco-editor/react";
 import { File } from "./utils/fileManager";
-
+import * as Diff from "diff";
+import { socket } from "./socket.ts";
 interface EditorProps {
   selectedFile: File | undefined;
 }
@@ -10,6 +11,17 @@ const EditorComponent: React.FC<EditorProps> = ({ selectedFile }) => {
   const [code, setCode] = useState<string | undefined>(selectedFile?.content);
   const [language, setLanguage] = useState<string | undefined>("javascript"); // Default language
 
+  console.log(selectedFile);
+  const handleCodeChange = (newVal:any) => {
+    let diff;
+    if(selectedFile && code){
+      diff = Diff.createTwoFilesPatch(selectedFile.name,selectedFile.name,code ,newVal);
+      socket.emit("diff",diff,code,selectedFile)
+      console.log(selectedFile);
+    }
+
+
+  }
   useEffect(() => {
     if (selectedFile) {
       setCode(selectedFile.content);
@@ -52,8 +64,9 @@ const EditorComponent: React.FC<EditorProps> = ({ selectedFile }) => {
         height="100vh"
         language={language}
         value={code}
+        width="100%"
         theme="vs-dark"
-        onChange={(newValue) => setCode(newValue || "")}
+        onChange={(newVal)=>handleCodeChange(newVal)}
       />
     </div>
   );

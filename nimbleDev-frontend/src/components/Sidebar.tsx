@@ -7,7 +7,7 @@ export const Sidebar = ({ children }: { children: ReactNode }) => {
 
 const Aside = styled.aside`
   display: block;
-  width: 250px;
+  min-width: 250px;
   height: 100vh;
   border-right: 2px solid;
   border-color: #242424;

@@ -116,11 +116,11 @@ const isChildSelected = (directory: Directory, selectedFile: File) => {
   let res: boolean = false;
 
   function isChild(dir: Directory, file: File) {
-    if (selectedFile.parentId === dir.name) {
+    if (selectedFile.parentDir === dir.name) {
       res = true;
       return;
     }
-    if (selectedFile.parentId === "0") {
+    if (selectedFile.parentDir === "0") {
       res = false;
       return;
     }

@@ -10,20 +10,17 @@ body {
 .CodeMirror {
   height: 90vh !important;
 }
-.code-editor {
-  display: flex;
+.editor-container{
+  /* flex: 1;  */
+  width: 100%;
+  overflow: hidden;
 }
-
-.editor-container {
-  flex: 1;
-}
-
 #root {
   width: 100%;
 }
 .output-and-terminal-container{
-  flex: 1;
-  width: 50vw;
+  /* flex: 1; */
+  /* width: 50vw; */
   background-color: white;
   display: flex;
   flex-direction: column;
@@ -34,4 +31,18 @@ body {
 }
 .terminal-container{
   flex: 1;
+}
+
+
+/* ------------ */
+.split {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.gutter {
+  background: #666;
+  cursor: col-resize;
+  /* width: 5px; */
 }

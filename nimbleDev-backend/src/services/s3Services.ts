@@ -58,14 +58,12 @@ export async function downloadFile(
 
   let fileName = path.basename(file.Key.substring(32));
   let dirName = path.dirname(file.Key.substring(32));
-  // console.log(fileName,dirName)
   let url = await getObjectUrl(file.Key);
   // downloadDir = downloadDir + (dirName == "." ? "/" : `${"/" + dirName}`);
   if(dirName != "." && !fs.existsSync(path.join(downloadDir,dirName))){//create directory if it does not already exist
     fs.mkdirSync(path.join(downloadDir,dirName))
   }
   const filePath = path.join(downloadDir , file.Key.substring(32));
-
   const response = await axios.get(url);
   if (typeof response.data === "object") {
     fs.writeFileSync(filePath, JSON.stringify(response.data));

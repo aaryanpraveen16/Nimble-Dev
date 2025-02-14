@@ -4,25 +4,28 @@ import "@xterm/xterm/css/xterm.css";
 import { socket } from "../socket.ts";
 import "./XtermStyles.css"; // Import your custom scrollbar styles
 import { FitAddon } from '@xterm/addon-fit';
-
+import { SerializeAddon } from 'xterm-addon-serialize';
 const Xterm = () => {
   const terminalRef = useRef<HTMLDivElement | null>(null);
   const terminalInstance = useRef<Terminal | null>(null);
   let inputBuffer = ""; // Regular variable to store user input
   const fitAddon = new FitAddon();
-  fitAddon.fit();
+  // const serializeAddon = new SerializeAddon();
+  // fitAddon.fit();
+
   useEffect(() => {
     // Initialize the Terminal instance
     const terminal = new Terminal({
       cursorBlink: true, // Enable blinking cursor
       rows: 20,
+      // windowsMode:true,
+      windowsPty:{backend:"conpty"}
     });
     terminalInstance.current = terminal;
 
     // Attach the terminal to the DOM element
     if (terminalRef.current) {
       terminal.open(terminalRef.current);
-
       // Display a welcome message
       terminal.writeln("Type commands and press Enter to execute.\r\n");
       terminal.write("> ");
@@ -37,7 +40,7 @@ const Xterm = () => {
     socket.on("stdoutFromCmd", (stdout: string) => {
       console.log(stdout, "stdout");
       terminal.writeln(stdout);
-      terminal.write("> ");
+      // terminal.write("> ");
     });
 
     return () => {
@@ -53,10 +56,10 @@ const Xterm = () => {
       terminalInstance.current?.write("\r\n");
       sendToServer();
       inputBuffer = ""; // Clear the input buffer
-      terminalInstance.current?.write("> "); // Display the prompt
+      // terminalInstance.current?.write("> "); // Display the prompt
     }else if (data === "\u0003") {
       // Handle Ctrl+C (exit or cancel)
-      inputBuffer = "CTRL+C";
+      inputBuffer = data;
       terminalInstance.current?.write("^C\r\n");
       sendToServer();
       inputBuffer="";
